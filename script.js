@@ -15,25 +15,33 @@ const storage = firebase.storage();
 
 function fetchData() {
     const contentContainer = document.getElementById('contentContainer');
-    contentContainer.innerHTML = '';
-    makeDraggable(div);
+    contentContainer.innerHTML = ''; // This will clear previous content
+    
     db.collection("uploads").get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             let data = doc.data();
             let div = document.createElement('div');
             div.className = "content";
-            makeDraggable(div);
+            
             if (data.fileType.startsWith("image/")) {
                 let img = document.createElement('img');
                 img.src = data.fileUrl;
                 img.alt = data.fileName;
                 div.appendChild(img);
-                div.innerHTML += `<p>${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span></p>`;
+                let pInfo = document.createElement('p');
+                pInfo.innerHTML = `${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span>`;
+                div.appendChild(pInfo);
             } else if (data.fileType === "application/pdf") {
-                div.innerHTML = `<iframe src="${data.fileUrl}"></iframe><p>${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span></p>`;
+                let iframe = document.createElement('iframe');
+                iframe.src = data.fileUrl;
+                div.appendChild(iframe);
+                let pInfo = document.createElement('p');
+                pInfo.innerHTML = `${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span>`;
+                div.appendChild(pInfo);
             }
 
             contentContainer.appendChild(div);
+            makeDraggable(div);  // Now, making the div draggable
         });
     });
 }
@@ -87,37 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function makeDraggable(elem) {
-    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+    let offsetX, offsetY;
 
-    elem.onmousedown = dragMouseDown;
+    elem.draggable = true;
 
-    function dragMouseDown(e) {
-        e.preventDefault();
-        // get the mouse cursor position at startup:
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        document.onmouseup = closeDragElement;
-        document.onmousemove = elementDrag;
-        elem.style.cursor = 'grabbing';
-    }
+    elem.addEventListener('dragstart', function(e) {
+        offsetX = e.clientX - parseInt(elem.style.left || 0);
+        offsetY = e.clientY - parseInt(elem.style.top || 0);
+    });
 
-    function elementDrag(e) {
-        e.preventDefault();
-        // calculate the new cursor position:
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        pos3 = e.clientX;
-        pos4 = e.clientY;
-        // set the element's new position:
-        elem.style.top = (elem.offsetTop - pos2) + "px";
-        elem.style.left = (elem.offsetLeft - pos1) + "px";
-    }
-
-    function closeDragElement() {
-        document.onmouseup = null;
-        document.onmousemove = null;
-        elem.style.cursor = 'grab';
-    }
+    elem.addEventListener('dragend', function(e) {
+        elem.style.left = (e.clientX - offsetX) + 'px';
+        elem.style.top = (e.clientY - offsetY) + 'px';
+    });
 }
 
 
