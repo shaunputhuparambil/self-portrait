@@ -10,9 +10,8 @@ const firebaseConfig = {
 };
 
 firebase.initializeApp(firebaseConfig);
-const analytics = firebase.analytics();
 const db = firebase.firestore();
-const storageRef = firebase.storage().ref();
+const storage = firebase.storage().ref();
 
 function resizeImage(file, maxWidth, maxHeight, callback) {
     const img = new Image();
@@ -37,7 +36,7 @@ function resizeImage(file, maxWidth, maxHeight, callback) {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-
+        
         canvas.toBlob(callback, file.type);
     };
     img.src = URL.createObjectURL(file);
@@ -46,14 +45,18 @@ function resizeImage(file, maxWidth, maxHeight, callback) {
 function makeMovable(element) {
     let offsetX, offsetY, isDown = false;
 
+    element.style.position = 'absolute';
+
     element.addEventListener('mousedown', (e) => {
         isDown = true;
         offsetX = e.clientX - element.getBoundingClientRect().left;
         offsetY = e.clientY - element.getBoundingClientRect().top;
+        element.style.cursor = 'grabbing';
     });
 
     document.addEventListener('mouseup', () => {
         isDown = false;
+        element.style.cursor = 'grab';
     });
 
     document.addEventListener('mousemove', (e) => {
@@ -111,27 +114,26 @@ document.addEventListener('DOMContentLoaded', () => {
             let file = files[i];
 
             resizeImage(file, 500, 500, function(resizedBlob) {
-                let fileRef = storageRef.child('uploads/' + file.name);
-
-                fileRef.put(resizedBlob).then(snapshot => {
-                    fileRef.getDownloadURL().then(url => {
-                        db.collection("uploads").add({
-                            fileName: file.name,
-                            fileType: file.type,
-                            fileUrl: url,
-                            uploaderName: uploaderName
-                        }).then(() => {
-                            fetchData();
-                        }).catch((error) => {
-                            console.error("Error adding document: ", error);
-                        });
+                let storageRef = storage.child(`uploads/${new Date().getTime()}_${file.name}`);
+                
+                storageRef.put(resizedBlob).then((snapshot) => {
+                    return snapshot.ref.getDownloadURL();
+                }).then((downloadURL) => {
+                    return db.collection("uploads").add({
+                        fileName: file.name,
+                        fileType: file.type,
+                        fileUrl: downloadURL,
+                        uploaderName: uploaderName
                     });
+                }).then(() => {
+                    fetchData();
                 }).catch((error) => {
-                    console.error("Error uploading file: ", error);
+                    console.error("Error adding document: ", error);
                 });
             });
         }
 
+        // Clear the input for repeated use
         event.target.value = "";
         document.getElementById('uploaderName').value = "";
     });

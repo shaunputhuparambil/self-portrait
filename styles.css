@@ -64,3 +64,8 @@ body {
 .content img:active {
     cursor: grabbing;
 }
+
+img {
+    cursor: grab;
+    transition: all 0.2s ease;
+}
