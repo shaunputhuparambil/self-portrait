@@ -12,6 +12,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const analytics = firebase.analytics();
 const db = firebase.firestore();
+const storage = firebase.storage();
 
 // Function to retrieve data from Firestore and display it
 function fetchData() {
@@ -50,30 +51,28 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('fileInput').addEventListener('change', function(event) {
         const uploaderName = document.getElementById('uploaderName').value.trim();
         const files = event.target.files;
+        const storageRef = storage.ref();
 
         for (let i = 0; i < files.length; i++) {
             let file = files[i];
-            let fileReader = new FileReader();
+            let fileRef = storageRef.child('uploads/' + file.name);
 
-            fileReader.onload = function(e) {
-                db.collection("uploads").add({
-                        fileName: file.name,
-                        fileType: file.type,
-                        fileUrl: e.target.result,
-                        uploaderName: uploaderName
-                    })
-                    .then((docRef) => {
-                        fetchData();
-                    })
-                    .catch((error) => {
-                        console.error("Error adding document: ", error);
-                    });
-            };
-
-            fileReader.readAsDataURL(file);
+            fileRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL();
+            }).then(downloadURL => {
+                return db.collection("uploads").add({
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileUrl: downloadURL,
+                    uploaderName: uploaderName
+                });
+            }).then((docRef) => {
+                fetchData();
+            }).catch((error) => {
+                console.error("Error uploading or adding document: ", error);
+            });
         }
 
-        // Clear the input for repeated use
         event.target.value = "";
         document.getElementById('uploaderName').value = "";
     });
