@@ -55,3 +55,12 @@ body {
     font-style: italic;
     color: #666;
 }
+
+.content img {
+    position: absolute;
+    cursor: grab;
+}
+
+.content img:active {
+    cursor: grabbing;
+}
