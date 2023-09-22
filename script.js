@@ -11,61 +11,7 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-const storage = firebase.storage().ref();
-
-function resizeImage(file, maxWidth, maxHeight, callback) {
-    const img = new Image();
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-            if (width > maxWidth) {
-                height *= maxWidth / width;
-                width = maxWidth;
-            }
-        } else {
-            if (height > maxHeight) {
-                width *= maxHeight / height;
-                height = maxHeight;
-            }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        canvas.toBlob(callback, file.type);
-    };
-    img.src = URL.createObjectURL(file);
-}
-
-function makeMovable(element) {
-    let offsetX, offsetY, isDown = false;
-
-    element.style.position = 'absolute';
-
-    element.addEventListener('mousedown', (e) => {
-        isDown = true;
-        offsetX = e.clientX - element.getBoundingClientRect().left;
-        offsetY = e.clientY - element.getBoundingClientRect().top;
-        element.style.cursor = 'grabbing';
-    });
-
-    document.addEventListener('mouseup', () => {
-        isDown = false;
-        element.style.cursor = 'grab';
-    });
-
-    document.addEventListener('mousemove', (e) => {
-        if (isDown) {
-            element.style.left = (e.clientX - offsetX) + 'px';
-            element.style.top = (e.clientY - offsetY) + 'px';
-        }
-    });
-}
+const storage = firebase.storage();
 
 function fetchData() {
     const contentContainer = document.getElementById('contentContainer');
@@ -81,7 +27,6 @@ function fetchData() {
                 img.src = data.fileUrl;
                 img.alt = data.fileName;
                 div.appendChild(img);
-                makeMovable(img);
                 div.innerHTML += `<p>${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span></p>`;
             } else if (data.fileType === "application/pdf") {
                 div.innerHTML = `<iframe src="${data.fileUrl}"></iframe><p>${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span></p>`;
@@ -112,24 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         for (let i = 0; i < files.length; i++) {
             let file = files[i];
+            
+            // Create a reference in Firebase storage using a unique name
+            const storageRef = storage.ref().child('uploads/' + Date.now() + '-' + file.name);
 
-            resizeImage(file, 500, 500, function(resizedBlob) {
-                let storageRef = storage.child(`uploads/${new Date().getTime()}_${file.name}`);
-                
-                storageRef.put(resizedBlob).then((snapshot) => {
-                    return snapshot.ref.getDownloadURL();
-                }).then((downloadURL) => {
-                    return db.collection("uploads").add({
-                        fileName: file.name,
-                        fileType: file.type,
-                        fileUrl: downloadURL,
-                        uploaderName: uploaderName
-                    });
-                }).then(() => {
-                    fetchData();
-                }).catch((error) => {
-                    console.error("Error adding document: ", error);
+            // Upload the file to Firebase storage
+            storageRef.put(file).then(snapshot => {
+                return snapshot.ref.getDownloadURL(); // Once uploaded, get the download URL
+            }).then(downloadURL => {
+                // Store the download URL in Firestore
+                return db.collection("uploads").add({
+                    fileName: file.name,
+                    fileType: file.type,
+                    fileUrl: downloadURL,
+                    uploaderName: uploaderName
                 });
+            }).then(() => {
+                fetchData(); // Refresh displayed files
+            }).catch(error => {
+                console.error("Error adding document: ", error);
             });
         }
 
