@@ -59,6 +59,10 @@ body {
 .content img {
     position: absolute;
     cursor: grab;
+    max-width: 200px; 
+    height: auto;
+    margin: 10px;
+    cursor: grab;
 }
 
 .content img:active {
@@ -68,4 +72,9 @@ body {
 img {
     cursor: grab;
     transition: all 0.2s ease;
+}
+
+.content {
+    position: relative;
+    display: inline-block; // To ensure they don’t stack vertically.
 }

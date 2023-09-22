@@ -16,12 +16,13 @@ const storage = firebase.storage();
 function fetchData() {
     const contentContainer = document.getElementById('contentContainer');
     contentContainer.innerHTML = '';
+    makeDraggable(div);
     db.collection("uploads").get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             let data = doc.data();
             let div = document.createElement('div');
             div.className = "content";
-
+            makeDraggable(div);
             if (data.fileType.startsWith("image/")) {
                 let img = document.createElement('img');
                 img.src = data.fileUrl;
@@ -84,3 +85,39 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('uploaderName').value = "";
     });
 });
+
+function makeDraggable(elem) {
+    let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+
+    elem.onmousedown = dragMouseDown;
+
+    function dragMouseDown(e) {
+        e.preventDefault();
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+        elem.style.cursor = 'grabbing';
+    }
+
+    function elementDrag(e) {
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elem.style.top = (elem.offsetTop - pos2) + "px";
+        elem.style.left = (elem.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+        elem.style.cursor = 'grab';
+    }
+}
+
+
