@@ -27,6 +27,7 @@ function fetchData() {
             if (data.positionX && data.positionY) {
                 div.style.left = data.positionX + 'px';
                 div.style.top = data.positionY + 'px';
+                div.classList.add('absolute-content'); // Add the absolute positioning class
             }
             
             if (data.fileType.startsWith("image/")) {
@@ -119,6 +120,7 @@ function makeDraggable(elem, docId) { // Added docId parameter
         let y = e.clientY - offsetY;
         elem.style.left = x + 'px';
         elem.style.top = y + 'px';
+        elem.classList.add('absolute-content'); // Ensure the element has absolute positioning
         
         // Save the position to Firestore
         db.collection("uploads").doc(docId).update({

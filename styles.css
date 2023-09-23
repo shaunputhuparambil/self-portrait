@@ -42,6 +42,21 @@ body {
     justify-content: center;
     gap: 15px;
     padding-top: 10%;
+    position: relative;
+    width: 90%;
+    margin: auto;
+    overflow: hidden; 
+}
+
+.content {
+    position: relative; /* Default positioning for grid-like arrangement */
+    margin: 10px; 
+    width: 210px; 
+    height: auto;
+}
+
+.absolute-content {
+    position: absolute !important; /* For elements that were dragged and positioned */
 }
 
 .content img, .content iframe {
@@ -72,19 +87,4 @@ body {
 .content img:active {
     cursor: grabbing;
     z-index: 10; /* Raise z-index while dragging */
-}
-
-#contentContainer {
-    position: relative;
-    width: 90%;
-    margin: auto;
-    padding-top: 10%;
-    overflow: hidden; 
-}
-
-.content {
-    position: absolute; 
-    margin: 10px; 
-    width: 210px; 
-    height: auto;
 }
