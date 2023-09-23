@@ -1,4 +1,3 @@
-// Firebase configuration and initialization
 const firebaseConfig = {
     apiKey: "AIzaSyC1Qe0aZgdIO6n3rrD4EkaNL0ok_IHT6-s",
     authDomain: "self-portrait-a1548.firebaseapp.com",
@@ -13,131 +12,187 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-function fetchData() {
-    const contentContainer = document.getElementById('contentContainer');
-    contentContainer.innerHTML = ''; // This will clear previous content
-    
-    db.collection("uploads").get().then((querySnapshot) => {
-        querySnapshot.forEach((doc) => {
-            let data = doc.data();
-            let div = document.createElement('div');
-            div.className = "content";
-            
-            // Set the position of the div if the position data exists in Firestore
-            if (data.positionX && data.positionY) {
-                div.style.left = data.positionX + 'px';
-                div.style.top = data.positionY + 'px';
-                div.classList.add('absolute-content'); // Add the absolute positioning class
-            }
-            
-            if (data.fileType.startsWith("image/")) {
-                let img = document.createElement('img');
-                img.src = data.fileUrl;
-                img.alt = data.fileName;
-                div.appendChild(img);
-                let pInfo = document.createElement('p');
-                pInfo.innerHTML = `${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span>`;
-                div.appendChild(pInfo);
-            } else if (data.fileType === "application/pdf") {
-                let iframe = document.createElement('iframe');
-                iframe.src = data.fileUrl;
-                div.appendChild(iframe);
-                let pInfo = document.createElement('p');
-                pInfo.innerHTML = `${data.fileName}<br><span class="uploader">Uploaded by: ${data.uploaderName}</span>`;
-                div.appendChild(pInfo);
-            }
+document.getElementById('importButton').addEventListener('click', function() {
+    const uploaderName = document.getElementById('uploaderName').value;
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    const date = document.getElementById('dateInput').value;
+    const tags = document.getElementById('tagsInput').value.split(',').map(tag => tag.trim());
 
-            contentContainer.appendChild(div);
-            makeDraggable(div, doc.id);  // Making the div draggable and passing the doc id
-        });
-    });
-}
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    fetchData();
-
-    document.getElementById('importButton').addEventListener('click', function() {
-        const uploaderName = document.getElementById('uploaderName').value.trim();
-
-        if (!uploaderName) {
-            alert('Please enter your name before uploading.');
-            return;
-        }
-
-        document.getElementById('fileInput').click();
-    });
-
-    document.getElementById('fileInput').addEventListener('change', function(event) {
-        const uploaderName = document.getElementById('uploaderName').value.trim();
-        const files = event.target.files;
-
-        for (let i = 0; i < files.length; i++) {
-            let file = files[i];
-            
-            // Create a reference in Firebase storage using a unique name
-            const storageRef = storage.ref().child('uploads/' + Date.now() + '-' + file.name);
-
-            // Upload the file to Firebase storage
-            storageRef.put(file).then(snapshot => {
-                return snapshot.ref.getDownloadURL(); // Once uploaded, get the download URL
-            }).then(downloadURL => {
-                // Store the download URL in Firestore
-                return db.collection("uploads").add({
+    if (uploaderName && file && date) {
+        const storageRef = storage.ref(`uploads/${file.name}`);
+        storageRef.put(file).then(snapshot => {
+            snapshot.ref.getDownloadURL().then(downloadURL => {
+                db.collection('uploads').add({
                     fileName: file.name,
                     fileType: file.type,
                     fileUrl: downloadURL,
-                    uploaderName: uploaderName
+                    uploaderName: uploaderName,
+                    date: date,
+                    tags: tags
+                }).then(() => {
+                    fetchData();
                 });
-            }).then(() => {
-                fetchData(); // Refresh displayed files
-            }).catch(error => {
-                console.error("Error adding document: ", error);
             });
-        }
-
-        // Clear the input for repeated use
-        event.target.value = "";
-        document.getElementById('uploaderName').value = "";
-    });
+        });
+    } else {
+        alert('Please enter all required details and select a file to upload.');
+    }
 });
 
-function makeDraggable(elem, docId) { // Added docId parameter
-    let offsetX, offsetY, isDragging = false;
+function fetchData() {
+    const contentContainer = document.getElementById('contentContainer');
+    contentContainer.innerHTML = '';
 
-    elem.draggable = true;
+    let contributors = {};
+    let allTags = [];
+    let yearlyData = {};
 
-    elem.addEventListener('dragstart', function(e) {
-        isDragging = true;
-        offsetX = e.clientX - elem.getBoundingClientRect().left;
-        offsetY = e.clientY - elem.getBoundingClientRect().top;
-        e.dataTransfer.setData('text/plain', '');
-    });
+    db.collection("uploads")
+        .orderBy('date', 'asc')
+        .get()
+        .then((querySnapshot) => {
+            querySnapshot.forEach((doc) => {
+                let data = doc.data();
 
-    elem.addEventListener('dragend', function(e) {
-        isDragging = false;
-        let x = e.clientX - offsetX;
-        let y = e.clientY - offsetY;
-        elem.style.left = x + 'px';
-        elem.style.top = y + 'px';
-        elem.classList.add('absolute-content'); // Ensure the element has absolute positioning
-        
-        // Save the position to Firestore
-        db.collection("uploads").doc(docId).update({
-            positionX: x,
-            positionY: y
+                if (data.uploaderName) {
+                    if (contributors[data.uploaderName]) {
+                        contributors[data.uploaderName] += 1;
+                    } else {
+                        contributors[data.uploaderName] = 1;
+                    }
+                }
+
+                if (data.tags) {
+                    allTags.push(...data.tags);
+                }
+
+                let div = document.createElement('div');
+                div.className = "content";
+                div.setAttribute('data-tags', data.tags.join(', '));
+
+                if (data.fileType && data.fileType.startsWith("image/")) {
+                    let img = document.createElement('img');
+                    img.src = data.fileUrl;
+                    img.alt = data.fileName;
+                    div.appendChild(img);
+                } else if (data.fileType === "application/pdf") {
+                    let iframe = document.createElement('iframe');
+                    iframe.src = data.fileUrl;
+                    div.appendChild(iframe);
+                }
+
+                let pillDiv = document.createElement('div');
+                pillDiv.className = "pill-outline";
+
+                let pInfo = document.createElement('p');
+                pInfo.className = "hotpink-text";
+                pInfo.innerHTML = data.fileName;
+
+                let uploaderInfo = document.createElement('span');
+                uploaderInfo.className = "uploader";
+                uploaderInfo.innerText = `Uploaded by: ${data.uploaderName}`;
+
+                pillDiv.appendChild(pInfo);
+                pillDiv.appendChild(uploaderInfo);
+                div.appendChild(pillDiv);
+
+                let year = new Date(data.date).getFullYear();
+                if (!yearlyData[year]) {
+                    yearlyData[year] = [];
+                }
+                yearlyData[year].push(div);
+            });
+
+            // Loop through the desired range of years
+            for (let year = 2004; year <= 2023; year++) {
+                let yearContainer = document.createElement('div');
+                yearContainer.className = "year-container";
+
+                let yearLabel = document.createElement('div');
+                yearLabel.className = "year-label";
+                yearLabel.innerText = year;
+                yearContainer.appendChild(yearLabel);
+
+                let itemsContainer = document.createElement('div');
+                itemsContainer.className = "items-container";
+                
+                if (yearlyData[year]) {
+                    yearlyData[year].forEach(item => itemsContainer.appendChild(item));
+                }
+                
+                yearContainer.appendChild(itemsContainer);
+                contentContainer.appendChild(yearContainer);
+            }
+
+            updateContributorsList(contributors);
+            updateTagFilter(allTags);
         });
-    });
+}
 
-    document.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        if (isDragging) {
-            let x = e.clientX - offsetX;
-            let y = e.clientY - offsetY;
-            elem.style.left = x + 'px';
-            elem.style.top = y + 'px';
-        }
+function updateTagFilter(tags) {
+    const tagFilter = document.getElementById('tagFilter');
+    // Clear existing options
+    while(tagFilter.firstChild) {
+        tagFilter.removeChild(tagFilter.firstChild);
+    }
+
+    // Add 'All' option
+    let allOption = document.createElement('option');
+    allOption.value = "";
+    allOption.textContent = "all";
+    tagFilter.appendChild(allOption);
+
+    // Add unique tags
+    let uniqueTags = [...new Set(tags)];
+    uniqueTags.forEach(tag => {
+        let option = document.createElement('option');
+        option.value = tag;
+        option.textContent = tag;
+        tagFilter.appendChild(option);
     });
 }
 
+function filterByTag(selectedTag) {
+    // Get all content elements
+    let contents = document.getElementsByClassName('content');
 
+    // Loop through all content elements and hide/show based on the selected tag
+    for(let content of contents) {
+        let contentTags = content.getAttribute('data-tags').split(', ');
+
+        if (selectedTag === "" || contentTags.includes(selectedTag)) {
+            content.style.display = 'block'; // Show content with matching tag or if 'all' is selected
+        } else {
+            content.style.display = 'none'; // Hide non-matching content
+        }
+    }
+}
+
+document.getElementById('tagFilter').addEventListener('change', function() {
+    filterByTag(this.value);
+});
+
+function updateContributorsList(contributors) {
+    const contributorsList = document.getElementById('contributorsList');
+    contributorsList.innerHTML = '';
+
+    for(let name in contributors) {
+        let div = document.createElement('div');
+        div.className = "contributor";
+        
+        let pName = document.createElement('p');
+        pName.innerText = name;
+
+        let pCount = document.createElement('p');
+        pCount.innerText = `${contributors[name]} item${contributors[name] > 1 ? 's' : ''}`;
+
+        div.appendChild(pName);
+        div.appendChild(pCount);
+        
+        contributorsList.appendChild(div);
+    }
+}
+
+// Fetch the data when the page loads
+fetchData();

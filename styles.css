@@ -1,62 +1,50 @@
 body {
-    font-family: 'Arial Narrow', sans-serif;
+    font-family: Arial Narrow, sans-serif;
     overflow: auto;
-    background: #f5f5f5;
     color: #333;
-    height: 200vh;
+    background: #f5f5f5;
+    padding: 0;
+    margin: 0;
 }
 
 .title {
     text-align: center;
-    font-size: 2rem;
-    text-transform: uppercase;
+    font-size: 5rem;
     color: #222;
-    text-shadow: 1px 1px #888888;
-    position: fixed;
-    top: 5%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
-}
-
-.highlight {
-    color: #444;
-    font-weight: 700;
-    font-size: 110%;
+    text-shadow: 3px 3px #888888;
+    margin-top: 5%;
 }
 
 .file-upload-form {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     display: flex;
     gap: 10px;
     flex-direction: column;
     align-items: center;
+    z-index: 10;
+    margin-top: 2%;
+}
+
+@media print {
+    .file-upload-form {
+        display: none; 
+    }
 }
 
 #contentContainer {
+    flex: 4;
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 15px;
-    padding-top: 10%;
-    position: relative;
-    width: 90%;
-    margin: auto;
-    overflow: hidden; 
+    flex-direction: column;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 20px;
+    overflow-y: auto;
 }
 
 .content {
-    position: relative; /* Default positioning for grid-like arrangement */
-    margin: 10px; 
-    width: 210px; 
-    height: auto;
-}
-
-.absolute-content {
-    position: absolute !important; /* For elements that were dragged and positioned */
+    width: 210px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .content img, .content iframe {
@@ -65,66 +53,111 @@ body {
     height: auto;
 }
 
-.content p {
-    font-size: 1.2rem;
+.content p, .uploader {
+    font-size: 1rem;
     margin: 5px 0 0 0;
     color: #333;
+    font-weight: bold;
+    text-align: center;
 }
 
 .uploader {
-    font-size: 0.8rem;
+    font-size: .8rem;
     font-style: italic;
     color: #666;
+    font-weight: normal;
 }
 
-.content img {
-    cursor: grab;
-    max-width: 200px; 
-    transition: all 0.2s ease;
-    margin: 10px 0;
-}
-
-.content img:active {
-    cursor: grabbing;
-    z-index: 10; /* Raise z-index while dragging */
-}
-
-.content {
-    position: relative;
-    display: inline-flex; /* To ensure they don’t stack vertically */
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-}
-
-#contentContainer {
-    position: relative;
-    width: 90%;
-    margin: auto;
-    padding-top: 10%;
-    overflow: hidden; 
-}
-
-.content {
-    position: absolute; 
-    width: 210px; 
-    height: auto;
-    z-index: 1; /* Add this line */
-}
-
-.file-upload-form {
-    position: fixed;
-    top: 20%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+.pill-outline {
     display: flex;
-    gap: 10px;
     flex-direction: column;
     align-items: center;
-    z-index: 2; /* Add this line */
+    border: 2px solid hotpink;
+    border-radius: 50px;
+    padding: 5px;
+    background-color: transparent;
+    z-index: 10;
 }
 
-#contentContainer {
-    z-index: 3; 
-    overflow: visible; 
+.hotpink-text {
+    color: hotpink;
+    font-family: Arial Narrow, sans-serif;
+    margin: 0;
 }
+
+.content .pill-outline {
+    width: 100%;
+}
+
+.star-icon {
+    position: absolute;
+    width: 24px; 
+    height: 24px;
+    fill: hotpink;
+    fill-opacity: 20%;
+    z-index: 5;
+}
+
+#contributorsBox {
+    flex: 1;
+    border: 2px solid hotpink;
+    border-radius: 25px;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin-right: 2%;
+    font-size: 20px;
+    text-align: center;
+}
+
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 20px;
+    margin-top: 3%;
+}
+
+#contributorsList {
+    font-size: 16px;
+}
+
+.filter-section {
+    background-color: #f7f7f7; 
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    float: right;  /* Position it to the right side */
+}
+
+#boochie {
+    margin-top: -3%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 5;
+}
+
+.year-container {
+    display: flex;
+    align-items: start;
+    margin-bottom: 20px;
+}
+
+.year-label {
+    flex: 0 0 60px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    background-color: #EEE;
+    margin-right: 20px;
+    font-size: 30px;
+}
+
+.items-container {
+    flex: 4;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 20px;
+    overflow-y: visible;
+}
+

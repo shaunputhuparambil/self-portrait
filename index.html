@@ -10,15 +10,39 @@
 </head>
 
 <body>
-    <div class="title">Shaun <span class="highlight">Puthuparambil</span></div>
+    <div class="title">shaun puthuparambil</div>
 
+    <div class="main-container">
+    
+        <div id="contributorsBox">
+            <h3>contributors</h3>
+            <div id="contributorsList"></div>
+        </div>
+    
+        <!-- Filter section moved just above the timeline -->
+        <div id="boochie">
+            <div class="filter-container">
+                <div class="filter-section">
+                    <label for="tagFilter">Filter by tags:</label>
+                    <select id="tagFilter">
+                        <option value="">All</option>
+                    </select>
+                </div>
+            </div>
+    
+            <!-- Vertical timeline -->
+            <div id="contentContainer"></div>
+        </div>
+    </div>
+
+    <!-- File upload form with date and tags input -->
     <div class="file-upload-form">
         <input type="text" id="uploaderName" placeholder="Enter your name">
         <input type="file" id="fileInput" multiple>
+        <input type="date" id="dateInput" placeholder="Select Date">
+        <input type="text" id="tagsInput" placeholder="Tags (comma separated)">
         <button id="importButton">Upload Files</button>
     </div>
-
-    <div id="contentContainer"></div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
@@ -26,5 +50,4 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-storage.js"></script>
     <script src="script.js"></script>
 </body>
-
 </html>
