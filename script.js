@@ -23,6 +23,12 @@ function fetchData() {
             let div = document.createElement('div');
             div.className = "content";
             
+            // Set the position of the div if the position data exists in Firestore
+            if (data.positionX && data.positionY) {
+                div.style.left = data.positionX + 'px';
+                div.style.top = data.positionY + 'px';
+            }
+            
             if (data.fileType.startsWith("image/")) {
                 let img = document.createElement('img');
                 img.src = data.fileUrl;
@@ -41,10 +47,11 @@ function fetchData() {
             }
 
             contentContainer.appendChild(div);
-            makeDraggable(div);  // Now, making the div draggable
+            makeDraggable(div, doc.id);  // Making the div draggable and passing the doc id
         });
     });
 }
+
 
 document.addEventListener('DOMContentLoaded', () => {
     fetchData();
@@ -94,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function makeDraggable(elem) {
+function makeDraggable(elem, docId) { // Added docId parameter
     let offsetX, offsetY, isDragging = false;
 
     elem.draggable = true;
@@ -103,15 +110,25 @@ function makeDraggable(elem) {
         isDragging = true;
         offsetX = e.clientX - elem.getBoundingClientRect().left;
         offsetY = e.clientY - elem.getBoundingClientRect().top;
-        e.dataTransfer.setData('text/plain', ''); // Required for Firefox
+        e.dataTransfer.setData('text/plain', '');
     });
 
     elem.addEventListener('dragend', function(e) {
         isDragging = false;
+        let x = e.clientX - offsetX;
+        let y = e.clientY - offsetY;
+        elem.style.left = x + 'px';
+        elem.style.top = y + 'px';
+        
+        // Save the position to Firestore
+        db.collection("uploads").doc(docId).update({
+            positionX: x,
+            positionY: y
+        });
     });
 
     document.addEventListener('dragover', function(e) {
-        e.preventDefault(); // Prevent default to allow drop
+        e.preventDefault();
         if (isDragging) {
             let x = e.clientX - offsetX;
             let y = e.clientY - offsetY;
