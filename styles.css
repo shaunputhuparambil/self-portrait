@@ -87,13 +87,11 @@ body {
     width: 90%;
     margin: auto;
     padding-top: 10%;
-    overflow: hidden; // Add overflow to contain floated child elements
+    overflow: hidden; 
 }
 
 .content {
-    position: relative; 
-    margin: 10px; 
+    position: absolute; 
     width: 210px; 
     height: auto;
 }
-
