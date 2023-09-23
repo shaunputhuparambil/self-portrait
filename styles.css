@@ -81,3 +81,20 @@ body {
     align-items: center;
     gap: 10px;
 }
+
+#contentContainer {
+    position: relative;
+    width: 90%;
+    margin: auto;
+    padding-top: 10%;
+    overflow: hidden; // Add overflow to contain floated child elements
+}
+
+.content {
+    position: relative; 
+    float: left; // Allow elements to be positioned next to each other
+    margin: 10px; // Add some spacing between the elements
+    width: 210px; // Set width so they wrap properly
+    height: auto; // Set height as auto
+}
+

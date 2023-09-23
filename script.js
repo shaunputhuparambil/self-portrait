@@ -95,18 +95,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function makeDraggable(elem) {
-    let offsetX, offsetY;
+    let offsetX, offsetY, isDragging = false;
 
     elem.draggable = true;
 
     elem.addEventListener('dragstart', function(e) {
-        offsetX = e.clientX - parseInt(elem.style.left || 0);
-        offsetY = e.clientY - parseInt(elem.style.top || 0);
+        isDragging = true;
+        offsetX = e.clientX - elem.getBoundingClientRect().left;
+        offsetY = e.clientY - elem.getBoundingClientRect().top;
+        e.dataTransfer.setData('text/plain', ''); // Required for Firefox
     });
 
     elem.addEventListener('dragend', function(e) {
-        elem.style.left = (e.clientX - offsetX) + 'px';
-        elem.style.top = (e.clientY - offsetY) + 'px';
+        isDragging = false;
+    });
+
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault(); // Prevent default to allow drop
+        if (isDragging) {
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+            elem.style.left = x + 'px';
+            elem.style.top = y + 'px';
+        }
     });
 }
 
