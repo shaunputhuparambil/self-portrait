@@ -109,4 +109,17 @@ body {
     position: absolute; 
     width: 210px; 
     height: auto;
+    z-index: 1; /* Add this line */
+}
+
+.file-upload-form {
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    gap: 10px;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2; /* Add this line */
 }
