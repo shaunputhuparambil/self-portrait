@@ -123,3 +123,8 @@ body {
     align-items: center;
     z-index: 2; /* Add this line */
 }
+
+#contentContainer {
+    z-index: 3; 
+    overflow: visible; 
+}
