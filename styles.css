@@ -92,9 +92,8 @@ body {
 
 .content {
     position: relative; 
-    float: left; // Allow elements to be positioned next to each other
-    margin: 10px; // Add some spacing between the elements
-    width: 210px; // Set width so they wrap properly
-    height: auto; // Set height as auto
+    margin: 10px; 
+    width: 210px; 
+    height: auto;
 }
 
