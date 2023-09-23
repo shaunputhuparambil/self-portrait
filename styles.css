@@ -88,3 +88,25 @@ body {
     cursor: grabbing;
     z-index: 10; /* Raise z-index while dragging */
 }
+
+.content {
+    position: relative;
+    display: inline-flex; /* To ensure they don’t stack vertically */
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+#contentContainer {
+    position: relative;
+    width: 90%;
+    margin: auto;
+    padding-top: 10%;
+    overflow: hidden; 
+}
+
+.content {
+    position: absolute; 
+    width: 210px; 
+    height: auto;
+}
