@@ -4,9 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <title>Shaun Puthuparambil's Archive</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
 </head>
 
 <body>
@@ -23,17 +28,19 @@
         <div id="boochie">
             <div class="filter-container">
                 <div class="filter-section">
-                    <label for="tagFilter">Filter by tags:</label>
-                    <select id="tagFilter">
-                        <option value="">All</option>
-                    </select>
+                    <label>Filter by tags:</label>
+                    <!-- The dropdown menu is removed -->
+                    <div id="tagButtonsContainer"></div>
                 </div>
             </div>
     
             <!-- Vertical timeline -->
             <div id="contentContainer"></div>
         </div>
+
     </div>
+
+    <div id="map" class="map"></div>
 
     <!-- File upload form with date and tags input -->
     <div class="file-upload-form">
@@ -41,8 +48,11 @@
         <input type="file" id="fileInput" multiple>
         <input type="date" id="dateInput" placeholder="Select Date">
         <input type="text" id="tagsInput" placeholder="Tags (comma separated)">
+        <textarea id="descriptionInput" placeholder="Enter a description"></textarea>
+        <input type="text" id="locationInput" placeholder="Enter Location">
         <button id="importButton">Upload Files</button>
     </div>
+
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
